@@ -1,0 +1,35 @@
+{% extends "app/base2.html" %}
+
+{% block user_profile %}
+
+<div class="profile-box">
+  <h2>Thông tin cá nhân</h2>
+  <ul class="profile-info">
+    <li><span class="label">Họ và tên:</span> {{ user.first_name }} {{ user.last_name }}</li>
+    <li><span class="label">Tên đăng nhập:</span> {{ user.username }}</li>
+    <li><span class="label">Email:</span> {{ user.email }}</li>
+    {% if diachi %}
+      <li><span class="label">Số điện thoại:</span> {{ diachi.phone }}</li>
+      <li><span class="label">Địa chỉ:</span> {{ diachi.address }}</li>
+      <li><span class="label">Thành phố:</span> {{ diachi.city }}</li>
+    {% else %}
+      <li>Chưa có thông tin giao hàng.</li>
+    {% endif %}
+  </ul>
+   <button onclick="document.getElementById('edit-form').style.display='block'">Thay đổi địa chỉ</button>
+
+  <div id="edit-form" style="display:none; margin-top:20px;">
+    <form method="POST">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Lưu địa chỉ</button>
+    </form>
+  </div>
+</div>
+
+
+{% endblock user_profile %}
+
+
+
+

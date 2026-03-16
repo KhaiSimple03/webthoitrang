@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'app'
 ]
 
@@ -56,14 +57,16 @@ ROOT_URLCONF = 'appbanhang.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'app.context_processors.admin_notifications',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                
             ],
         },
     },
@@ -79,7 +82,7 @@ WSGI_APPLICATION = 'appbanhang.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'quanao',
+        'NAME': 'webquanao',
         'USER': 'root',
         'PASSWORD': '123456',
         'HOST': 'localhost',
@@ -112,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
 USE_I18N = True
 
@@ -135,3 +138,11 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/images/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'app/static/images')
+
+VNPAY_RETURN_URL = 'http://localhost:8000/payment_return' 
+VNPAY_PAYMENT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  
+VNPAY_API_URL = 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'
+VNPAY_TMN_CODE = '1MO7BN80' 
+VNPAY_HASH_SECRET_KEY = 'DP7V3STXW3K5IYP2NNTBW4HO1OC2AYP8'
+
+

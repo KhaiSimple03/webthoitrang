@@ -19,10 +19,15 @@ from django.urls import path,include
 
 from django.conf.urls.static import static
 from django.conf import settings
+from app.admin_custom import custom_admin_site
+from app.views import thong_ke_doanh_thu
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('myadmin/', custom_admin_site.urls),
+    path('thong-ke/', thong_ke_doanh_thu, name='thong_ke_doanh_thu'),
     path('', include('app.urls')),
+    
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root =settings.MEDIA_ROOT)

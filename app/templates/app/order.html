@@ -1,0 +1,246 @@
+{% extends "app/base2.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block payment_form %}
+<div class="container my-4">
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if orders %}
+    {% for order in orders %}
+      <div class="order-card mb-4 shadow-sm">
+        <!-- Header: icon + tiêu đề + trạng thái -->
+        <div class="order-card-header d-flex align-items-center justify-content-between bg-light">
+          <h5 class="mb-0">
+            <i class="bi bi-bag-check-fill me-2 text-primary"></i>
+            Đơn hàng #{{ order.id }}
+          </h5>
+          <span class="badge bg-info text-dark">{{ order.get_status_display }}</span>
+        </div>
+
+        <!-- Body: danh sách sản phẩm trong đơn -->
+        <div class="order-card-body">
+          {% for item in order.order_item_set.all %}
+            <div class="row align-items-center mb-3">
+              <!-- 1. Ảnh sản phẩm -->
+              <div class="col-2">
+                <img src="{{ item.product.ImageURL }}" 
+                     alt="{{ item.product.name }}" 
+                     class="img-fluid rounded" style="height:200px">
+              </div>
+              <!-- 2. Tên + size & số lượng bên dưới -->
+              <div class="col-7">
+                <h6 class="mb-1">{{ item.product.name }}</h6>
+                <div class="text-secondary small">
+                  Size: <strong>{{ item.size.name }}</strong> &nbsp;|&nbsp;
+                  Số lượng: <strong>{{ item.quantity }}</strong> &nbsp;|&nbsp;
+                  Giá: <strong>{{ item.product.price|intcomma }}₫</strong> &nbsp;|&nbsp;
+                  Màu sắc: <span style="width: 20px; height: 20px; background-color: {{ item.color.code }}; border: 1px solid #ccc; margin:0 auto; display: inline-block; vertical-align: middle;"></span>
+                </div>
+              </div>
+            </div>
+            {% if not forloop.last %}
+              <hr class="my-2">
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-end px-3 pb-3">
+          <div class="text-end">
+            <div>
+              Tổng sản phẩm:
+              <strong>{{ order.get_cart_items }}</strong>
+            </div>
+            <div>
+              Tổng thanh toán:
+              <strong class="text-danger h5">{{ order.get_cart_totalall|intcomma }}₫</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer: các nút hành động -->
+        <div class="order-card-footer text-end bg-white">
+          <button type="button" class="btn btn-success me-2 btn-received" data-order-id="{{ order.id }}">
+            Đã nhận được hàng
+          </button>
+          <a href="{% url 'cancel_order' order.id %}" class="btn btn-outline-danger me-2" onclick="return confirm('Bạn chắc chắn muốn huỷ đơn hàng này?')">
+            Hủy đơn hàng
+          </a>
+          <button type="button" class="btn btn-primary">
+            Đánh giá
+          </button>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-warning text-center">
+      Bạn chưa có đơn hàng nào.
+    </div>
+  {% endif %}
+</div>
+
+<br><br><br>
+
+<script>
+document.querySelectorAll('.btn-received').forEach(button => {
+  button.addEventListener('click', function() {
+    const orderId = this.dataset.orderId;
+    if (confirm('Xác nhận đã nhận hàng?')) {
+      fetch(`/orders/${orderId}/received/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+        if (data.success) {
+          location.reload(); // reload lại để hiển thị trạng thái mới
+        }
+      });
+    }
+  });
+});
+</script>
+{% endblock %}
+
+
+{% comment %} {% extends "app/base2.html" %}
+{% load static %}
+{% load humanize %}
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Thanh toán</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+    </head>
+    <body>
+        {% block payment_form %}
+    <div class="container my-4">
+    {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if orders %}
+      {% for order in orders %}
+        <div class=" mb-4 shadow-sm">
+          <!-- Header: icon + tiêu đề + trạng thái -->
+          <div class="card-header d-flex align-items-center justify-content-between bg-light">
+            <h5 class="mb-0">
+              <i class="bi bi-bag-check-fill me-2 text-primary"></i>
+              Đơn hàng #{{ order.id }}
+            </h5>
+            <span class="badge bg-info text-dark">{{ order.get_status_display }}</span>
+          </div>
+
+          <!-- Body: danh sách sản phẩm trong đơn -->
+          <div class="card-body">
+            {% for item in order.order_item_set.all %}
+              <div class="row align-items-center mb-3">
+                <!-- 1. Ảnh sản phẩm -->
+                <div class="col-2">
+                  <img src="{{ item.product.ImageURL }} " 
+                       alt="{{ item.product.name }}" 
+                       class="img-fluid rounded" style="height:200px">
+                </div>
+                <!-- 2. Tên + size & số lượng bên dưới -->
+                <div class="col-7">
+                  <h6 class="mb-1">{{ item.product.name }}</h6>
+                  <div class="text-secondary small">
+                    Size: <strong>{{ item.size.name }}</strong> &nbsp;|&nbsp;
+                    Số lượng: <strong>{{ item.quantity }}</strong> &nbsp;|&nbsp;
+                    Giá: <strong>{{ item.product.price|intcomma }}₫</strong>&nbsp;|&nbsp;
+                    Màu sắc: <div style="width: 20px; height: 20px; background-color: {{ item.color.code }}; border: 1px solid #ccc; margin:0 auto; display: inline-block; vertical-align: middle;"></div>
+                  </div>
+                </div>
+              
+                
+              </div>
+              {% if not forloop.last %}
+                <hr class="my-2">
+              {% endif %}
+            {% endfor %}
+          </div>
+          
+          <div class="d-flex justify-content-end px-3 pb-3">
+            <div class="text-end">
+              <div>
+                Tổng sản phẩm:
+                <strong>{{ order.get_cart_items }}</strong>
+              </div>
+              <div>
+                Tổng thanh toán:
+                <strong class="text-danger h5">{{ order.get_cart_totalall|intcomma }}₫</strong>
+              </div>
+            </div>
+          </div>
+          <!-- Footer: các nút hành động -->
+          <div class="card-footer text-end bg-white">
+            <button type="button" class="btn btn-success me-2 btn-received" data-order-id="{{ order.id }}">
+              Đã nhận được hàng
+            </button>
+            <a href="{% url 'cancel_order' order.id %}" class="btn btn-outline-danger me-2" onclick="return confirm('Bạn chắc chắn muốn huỷ đơn hàng này?')">Hủy đơn hàng</a>
+            <button type="button" class="btn btn-primary">
+              Đánh giá
+            </button>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-warning text-center">
+        Bạn chưa có đơn hàng nào.
+      </div>
+    {% endif %}
+  </div>
+<br><br><br><br>
+  <script>
+  document.querySelectorAll('.btn-received').forEach(button => {
+    button.addEventListener('click', function() {
+      const orderId = this.dataset.orderId;
+      if (confirm('Xác nhận đã nhận hàng?')) {
+        fetch(`/orders/${orderId}/received/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+          if (data.success) {
+            location.reload(); // reload lại để hiển thị trạng thái mới
+          }
+        });
+      }
+    });
+  });
+</script>
+
+        {% endblock payment_form %}
+        <script src="" async defer></script>
+    </body>
+</html> {% endcomment %}
