@@ -1,0 +1,20 @@
+{% extends "app/base2.html" %}
+
+{% block return_pay %}
+ <div class="payment-result">
+  <h2 class="{% if result == 'Giao dịch thành công' %}text-success{% else %}text-fail{% endif %}">{{ result }}</h2>
+
+  <div class="payment-info">
+    {% if order_id %}
+    <p><span class="label">Mã đơn hàng:</span> #{{ order_id }}</p>
+    <p><span class="label">Số tiền:</span> {{ amount|floatformat:0 }} VND</p>
+    <p><span class="label">Mô tả:</span> {{ order_desc }}</p>
+    <p><span class="label">Mã giao dịch VNPAY:</span> {{ vnp_TransactionNo }}</p>
+    <p><span class="label">Mã phản hồi:</span> {{ vnp_ResponseCode }}</p>
+    <p><span class="label">Thời gian thanh toán:</span> {{ vnp_PayDate|date:"Y-m-d H:i:s" }}</p>
+    {% else %}
+    <p>{{ result }}</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

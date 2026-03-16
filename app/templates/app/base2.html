@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SIMPLE STORE</title>
+    <script>
+     // expose biến toàn cục cho cart.js
+     window.currentUser = "{{ request.user.username|default:'AnonymousUser' }}";
+     window.csrftoken    = (function(name) {
+       let cookieValue = null;
+       if (document.cookie && document.cookie !== '') {
+         document.cookie.split(';').forEach(c => {
+           c = c.trim();
+           if (c.startsWith(name+'=')) cookieValue = decodeURIComponent(c.substring(name.length+1));
+         });
+       }
+       return cookieValue;
+     })('csrftoken');
+     // expose URL endpoint cho AJAX
+     window.updateItemUrl = "{% url 'update_item' %}";
+    </script>
+    
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--css-->
+    <link href="{% static 'app/css/deco.css' %}" rel="stylesheet" />
+
+  </head>
+
+  <body>
+     <nav style="background-color:#eee6db; " class="navbar navbar-expand-lg ">
+      <div class="container-fluid">
+        <div class="logo-container">
+          <a class="navbar-brand" href="{% url 'home' %}" style="padding:0px 0px 0px 5px">
+            <img src="{% static 'app/images/logotiger2.png' %}" class="cropped-logo"  >
+          </a>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse align-items-center" id="mainNavbar">
+
+          <!-- Bên trái -->
+          <ul  class=" navbar-nav me-auto mb-2 mb-lg-0">
+            <li style=" font-weight: bold" class="nav-item">
+              <a style="" class="nav-link active" aria-current="page" href="{% url 'home' %}">TRANG CHỦ</a>
+            </li>
+            <li style=" font-weight: bold" class="nav-item dropdown position-static">
+          <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            DANH MỤC SẢN PHẨM
+          </a>
+          <div  class="dropdown-menu dropdown-large  mt-1 shadow " aria-labelledby="navbarDropdown">
+            <div style="margin-left:100px" class="row container justify-content-center text-center "  >
+              {% for category in categories %}
+              <div class="col-2 text-center" >
+                <a href="{% url "category" %}?category={{category.slug}}" class="text-decoration-none text-dark d-block">
+                  <img src="{{category.ImageURL}}" alt="{{ category.name }}" class="img rounded mb-1" style="height: 250px; width:170px ;object-fit: cover; ">
+                  <div class="fw-semibold small">{{ category.name }}</div>
+                </a>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          </li>
+            <li style=" font-weight: bold" class="nav-item">
+              <a style="" class="nav-link active" aria-current="page" href="{% url 'category' %}?category=bst-chillax"> TRENDING</a>
+            </li>
+            <li style=" font-weight: bold" class="nav-item">
+              <a style="" class="nav-link active" aria-current="page" href="{% url 'category' %}?category=bst-hoai-niem">BST NỔI BẬT</a>
+            </li>
+            
+          </ul>
+
+          <!-- Ở giữa -->
+          <form class="d-flex mx-auto align-items-center" role="search" method="POST" action="{% url 'search' %}" style="min-width: 200px; max-width: 250px; flex: 1;">
+            {% csrf_token %}
+            <input class="form-control form-control-sm rounded-pill me-2" type="search" placeholder="Tìm kiếm..." name="searched">
+            <button class="btn btn-outline-success d-flex align-items-center justify-content-center" type="submit"
+              style="width: 36px; height: 36px; border-radius: 50%;">
+              <i class="bi bi-search"></i>
+            </button>
+          </form>
+
+          <!-- Bên phải -->
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-flex align-items-center">
+            {% if user.is_authenticated %}
+            <li class="nav-item dropdown mx-2">
+              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1" style="font-size: 1.3rem;"></i> {{ request.user }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url "user_profile" %}">Thông tin cá nhân</a></li>
+                <li><a class="dropdown-item" href=" {% url "order" %} ">Đơn hàng</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}">Đăng xuất</a></li>
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item mx-2">
+              <a class="btn btn-danger text-white px-3 py-0" href="{% url 'register' %}">Đăng ký</a>
+            </li>
+            <li class="nav-item mx-2">
+              <a class="btn btn-success text-white px-3 py-0" href="{% url 'login' %}">Đăng nhập</a>
+            </li>
+            {% endif %}
+
+            <li class="nav-item mx-2">
+              <a class="nav-link position-relative" href="{% url 'cart' %}">
+                <i class="bi bi-cart" style="font-size: 1.5rem;"></i>
+                <span id="cart-items-count" class="position-absolute badge rounded-pill bg-danger text-white" style="top: 0; left: 60%; transform: translate(-30%, -1%); font-size: 0.75rem; padding: 0.25em 0.5em;">
+                  {{cartItems}}
+                  <span class="visually-hidden">sản phẩm trong giỏ</span>
+                </span>
+              </a>
+            </li>
+          </ul>
+
+        </div>
+      </div>
+    </nav>
+    <div >
+      {% block user_profile %}{% endblock user_profile %}
+      {% block banner_slider %}{% endblock banner_slider %}
+
+      {% block main_content %}{% endblock main_content %}
+
+      {% block cart_content %}{% endblock cart_content %}
+      {% block content_checkout %}{% endblock content_checkout %}
+      {% block register_form %}{% endblock register_form %}
+      {% block form_login %}{% endblock form_login %}
+      {% block search %}{% endblock search %}
+      {% block category_form %}{% endblock category_form %}
+      {% block product_detail_content %}{% endblock product_detail_content %}
+      {% block payment_form %}{% endblock payment_form %}
+      {% block return_pay %}{% endblock return_pay %}
+    </div>
+
+    <!--footer-->
+    <div class="  my-3">
+      <div class="text-center container-fluid footeranh">
+        <img src="{% static "app/images/banner/foodter.png" %}" alt="Banner nhỏ" class="" style=" height: 500px; object-fit: cover;">
+      </div>
+    </div>
+    <footer class=" footer bg-dark text-light py-4 mt-auto">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-4">
+						<h5>Thông tin liên hệ</h5>
+						<p><i class="fas fa-map-marker-alt"></i> Địa chỉ: 123 Phố Fashion, Hà Nội, Việt Nam</p>
+						<p><i class="fas fa-phone-alt"></i> Số điện thoại: (+84) 123 456 789</p>
+						<p><i class="fas fa-envelope"></i> Email: support@fashionstore.com</p>
+					</div>
+					<div class="col-md-4">
+						<h5>Liên kết</h5>
+						<ul class="list-unstyled">
+							<li><a href="#" class="text-light">Giới thiệu</a></li>
+							<li><a href="#" class="text-light">Chính sách bảo mật</a></li>
+							<li><a href="#" class="text-light">Điều khoản sử dụng</a></li>
+							<li><a href="#" class="text-light">Chính sách giao hàng</a></li>
+						</ul>
+					</div>
+					<div class="col-md-4">
+						<h5>Theo dõi chúng tôi</h5>
+						<div class="social-icons">
+							<a href="#" class="text-light me-3"><i class="fab fa-facebook-f"></i></a>
+							<a href="#" class="text-light me-3"><i class="fab fa-instagram"></i></a>
+							<a href="#" class="text-light me-3"><i class="fab fa-twitter"></i></a>
+							<a href="#" class="text-light me-3"><i class="fab fa-youtube"></i></a>
+						</div>
+					</div>
+				</div>
+				<div class="row mt-4">
+					<div class="col-12 text-center">
+						<p>&copy; 2025 Fashion Store. All rights reserved.</p>
+					</div>
+				</div>
+			</div>
+		</footer>
+    {% comment %} <script src="{% static 'app/js/cart.js' %}" ></script> {% endcomment %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+    
+
+  </body>
+</html>

@@ -1,0 +1,111 @@
+{# app/search.html #}
+{% extends "app/base2.html" %}
+{% load static humanize %}
+
+{% block search %}
+  <h2>Kết quả tìm kiếm cho "{{ searched }}"</h2>
+
+  {% if keys %}
+    <div class="container">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gx-6 ">
+          {% for product in keys %}
+          <div class="col-4">
+            <div class="card border-0 position-relative" >
+              <!-- Ảnh sản phẩm -->
+              <div class="product-image position-relative">
+                <img src="{{product.ImageURL}}" class="card-img-top" alt="{{ product.name }}">
+                
+                <!-- Thêm nút Xem chi tiết và Thêm vào giỏ hàng khi hover -->
+                <div class="overlay position-absolute bottom-0 start-0 w-100 d-flex justify-content-center p-3">
+                  <!-- Xem chi tiết -->
+                  <a href="{% url 'product_detail' product_id=product.id %}" class="btn btn-success" style="background-color:#1e3a1d">Xem chi tiết</i></a>
+                  <!-- Thêm vào giỏ hàng -->
+                  <button type="button"class="btn btn-success" style="background-color:#1e3a1d" data-bs-toggle="modal" data-bs-target="#sizeModal{{ product.id }}">Thêm vào  <i class="fa-solid fa-cart-plus"></i></button>
+                </div>
+              </div>
+              
+              <div class="card-body text-center">
+                <p class="mb-1">{{ product.name }}</p>
+                <div class="text-danger fw-bold">{{ product.price|intcomma}}đ</div>
+              </div>
+            </div>
+          </div>
+           <div class="modal fade" id="sizeModal{{ product.id }}" tabindex="-1" aria-labelledby="sizeModalLabel{{ product.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="sizeModalLabel{{ product.id }}">Chọn size - {{ product.name }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label for="sizeSelect{{ product.id }}" class="form-label">Size</label>
+                    <!-- thay thế hẳn <select> … </select> bằng nhóm radio -->
+                      <div class="mb-3">
+                        
+                        <div class="btn-group w-100" role="group" aria-label="Chọn size">
+                            <!-- Size S -->
+                            <input type="radio" class="btn-check" name="size{{ product.id }}" id="sizeS{{ product.id }}" value="{{ product.size_S }}" checked>
+                            <label class="btn btn-outline-primary" for="sizeS{{ product.id }}">S</label>
+
+                            <!-- Size M -->
+                            <input type="radio" class="btn-check" name="size{{ product.id }}" id="sizeM{{ product.id }}" value="{{ product.size_M }}" >
+                            <label class="btn btn-outline-primary" for="sizeM{{ product.id }}">M</label>
+
+                            <!-- Size L -->
+                            <input type="radio" class="btn-check" name="size{{ product.id }}" id="sizeL{{ product.id }}" value="{{ product.size_L }}" >
+                            <label class="btn btn-outline-primary" for="sizeL{{ product.id }}">L</label>
+
+                            <!-- Size XL -->
+                            <input type="radio" class="btn-check" name="size{{ product.id }}" id="sizeXL{{ product.id }}" value="{{ product.size_XL }}" >
+                            <label class="btn btn-outline-primary" for="sizeXL{{ product.id }}">XL</label>
+                          </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label">Màu sắc</label>
+                        <div class="d-flex gap-2">
+                          {% for color in product.color_list %}
+                            <input type="radio" class="btn-check"
+                                  name="color{{ product.id }}"
+                                  id="color{{ color.id }}{{ product.id }}"
+                                  value="{{ color.id }}"
+                                  {% if not color.has_stock %}disabled{% endif %}
+                                  {% if forloop.first %}checked{% endif %}>
+                            <label 
+                              class="rounded-circle border border-2 color-option"
+                              style="
+                                width: 30px; 
+                                height: 30px; 
+                                background-color: {{ color.code }}; 
+                                cursor: pointer;
+                                {% if not color.has_stock %} opacity: 0.4; {% endif %}
+                              "
+                              for="color{{ color.id }}{{ product.id }}"
+                              title="{{ color.name }}">
+                            </label>
+                          {% endfor %}
+                        </div>
+                      </div>
+                  </div>
+                  
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                  <button type="button" class="btn btn-primary update-cart" data-product="{{ product.id }}" data-action="add" data-bs-dismiss="modal">Thêm</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+  {% else %}
+    <div class="alert alert-warning text-center">
+      Không có sản phẩm phù hợp với từ khóa "<strong>{{ searched }}</strong>".
+    </div>
+  {% endif %}
+  <script src="{% static 'app/js/cart_home.js' %}" ></script>
+{% endblock search %}
+
+
+

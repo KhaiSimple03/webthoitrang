@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+    </head>
+    <body>
+    <div style="text-align:center">
+        <h1> THÔNG TIN CỦA THẦY CÔ</h1>
+        <form method="POST" >
+            {% csrf_token %}
+            nhập vào tên giáo viên: <input type="text" name = "ten"><br>
+            nhập vào chuyên ngành giáo viên: <input type= "text" name="chuyen_nganh"><br>
+            nhập vào tuổi : <input type="text" name="tuoi">
+            <p>trang thai hien tai:</p> 
+            <input type="radio" name="status" value="true">có<br>
+            <input type="radio" name="status" value="false">khÔNG<br>
+            <button type="submit"> XÁC NHẬN</button>
+
+        </form>
+        <div style="color:black">
+        <p>giao vien {{thong_tin.name}} </p>
+        <p>làm việc tại khoa {{thong_tin.chuyennganh}} </p>
+        <p>Năm nay {{thong_tin.tuoi}} tuoi</p>
+        <p>hien tại đang {{trang_thai}} </p>
+        </div>
+
+        <p> san pham duoc chon la: {{sanpham.name}} </p>
+        <p> san pham duoc chon la: {{sanpham.price}} </p>
+        <p> san pham duoc chon la: {{sanpham.description}} </p>
+        <p> san pham duoc chon la: {{sanpham.name}} </p>
+    </div>
+        <script src="" async defer></script>
+    </body>
+</html>
